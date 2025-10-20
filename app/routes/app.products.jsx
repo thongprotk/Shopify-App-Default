@@ -175,11 +175,6 @@ export default function ProductsPage() {
     setIndexPage(1);
   }, []);
 
-  const handleFilterQueryRemove = useCallback(() => {
-    setFilterQuery("");
-    setIndexPage(1);
-  }, []);
-
   const handleFilterClearAll = useCallback(() => {
     setFilterQuery("");
     setStatusFilter([]);
@@ -190,38 +185,48 @@ export default function ProductsPage() {
     setSortSelected(value);
     setIndexPage(1);
   }, []);
-  // const handleTabChange = useCallback((selectedTabIndex) => {
-  //   setSelected(selectedTabIndex);
-  //   setIndexPage(1);
-  // }, []);
-  const onActionCancel = useCallback(() => {
-    setEditModalActive(false);
-    setCreateModalActive(false);
-    setDeleteModalActive(false);
-    setFilterQuery("");
-  }, []);
+
+  const onActionCancel = () => {};
+  const onHandleSave = async () => {
+    await sleep(1);
+    return true;
+  };
+
   const handleTabChange = useCallback((selectedTabIndex) => {
     setSelected(selectedTabIndex);
     setIndexPage(1);
 
     // Update status filter based on selected tab
     switch (selectedTabIndex) {
-      case 0: // All
+      case 0:
         setStatusFilter([]);
         break;
-      case 1: // Active
+      case 1:
         setStatusFilter(["ACTIVE"]);
         break;
-      case 2: // Draft
+      case 2:
         setStatusFilter(["DRAFT"]);
         break;
-      case 3: // Archived
+      case 3:
         setStatusFilter(["ARCHIVED"]);
         break;
       default:
         setStatusFilter([]);
     }
   }, []);
+  const deleteView = (index) => {
+    const newItemStrings = [...itemStrings];
+    newItemStrings.splice(index, 1);
+    setItemStrings(newItemStrings);
+    setSelected(0);
+  };
+
+  const duplicateView = async (name) => {
+    setItemStrings([...itemStrings, name]);
+    setSelected(itemStrings.length);
+    await sleep(1);
+    return true;
+  };
   const onCreateNewView = useCallback(
     (value) => {
       console.log("Create new view with filter:", value);
@@ -238,21 +243,7 @@ export default function ProductsPage() {
     [itemStrings],
   );
 
-  const deleteView = (index) => {
-    const deletedView = itemStrings[index];
-    const newItemStrings = [...itemStrings];
-    newItemStrings.splice(index, 1);
-    setItemStrings(newItemStrings);
-    setSelected(0);
-    showToast(`Deleted view: ${deletedView}`);
-  };
-  const duplicateView = (name) => {
-    const newItemStrings = [...itemStrings, name];
-    setItemStrings(newItemStrings);
-    setSelected(newItemStrings.length - 1);
-    return Promise.resolve(true);
-  };
-  const primaryAction = [
+  const primaryAction =
     selected === 0
       ? {
           type: "save-as",
@@ -265,9 +256,7 @@ export default function ProductsPage() {
           onAction: () => onCreateNewView,
           disabled: false,
           loading: false,
-        },
-  ];
-
+        };
   //toast message to show success or error
   const showToast = (message, isError = false) => {
     app.toast.show(message, {
@@ -502,6 +491,46 @@ export default function ProductsPage() {
     index,
     onAction: () => handleTabChange(index),
     id: `${item}-${index}`,
+    isBlock: index === 0,
+    actions:
+      index !== 0
+        ? []
+        : [
+            {
+              type: "rename",
+              onAction: () => {},
+              onPrimaryAction: async (value) => {
+                const newItemsStrings = tabs.map((item, idx) => {
+                  if (idx === index) {
+                    return value;
+                  }
+                  return item.content;
+                });
+                await sleep(1);
+                setItemStrings(newItemsStrings);
+                return true;
+              },
+            },
+            {
+              type: "duplicate",
+              onPrimaryAction: async (value) => {
+                await sleep(1);
+                duplicateView(value);
+                return true;
+              },
+            },
+            {
+              type: "edit",
+            },
+            {
+              type: "delete",
+              onPrimaryAction: async () => {
+                await sleep(1);
+                deleteView(index);
+                return true;
+              },
+            },
+          ],
   }));
   const rowMarkup = currentProducts.map((product, index) => (
     <IndexTable.Row
@@ -576,7 +605,7 @@ export default function ProductsPage() {
           queryValue={filterQuery}
           queryPlaceholder="Tìm kiếm sản phẩm"
           onQueryChange={handleFilterQueryChange}
-          onQueryClear={handleFilterQueryRemove}
+          onQueryClear={() => setFilterQuery("")}
           onClearAll={handleFilterClearAll}
           onSort={handleSortQueryChange}
           primaryAction={primaryAction}
@@ -593,8 +622,6 @@ export default function ProductsPage() {
           filters={filter}
           appliedFilters={appliedFilters}
           mode={mode}
-          onDeleteView={deleteView}
-          onDuplicateView={duplicateView}
           setMode={setMode}
         />
         <IndexTable
