@@ -1,0 +1,20 @@
+{
+  "data": {
+    "home": {
+      "homeText": "Views Block"
+    },
+    "button-text": {
+      "openPopup": "Views Tags",
+      "closePopup": "Close Tags"
+    },
+    "popup-header": {
+      "content": "Welcome to the Tags"
+    },
+    "popup-content": {
+      "title": "This is a Tags",
+      "name": "Name Developer:",
+      "description": "You can see product:",
+      "tagsContent": "This product is tagged with: "
+    }
+  }
+}

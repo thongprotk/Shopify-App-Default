@@ -1,0 +1,139 @@
+
+<!-- Button để mở popup -->
+<button id="openPopupBtn" class="popup-button">
+  {{ 'data.button-text.openPopup' | t }}
+</button>
+
+<!-- Popup overlay -->
+<div id="popupOverlay" class="popup-overlay">
+  <div class="popup-content">
+    <div class="popup-header">
+      <h3>{{ 'data.popup-header.content' | t }}</h3>
+      <button id="closePopupBtn" class="close-button">&times;</button>
+    </div>
+    <div class="popup-body">
+      <div class="popup-item">{{ 'data.popup-content.name' | t }} Bui Trung Thong</div>
+      <div class="popup-item">{{ 'data.popup-content.description' | t }} {{product.title}} </div>
+      <div class="popup-item">{{ 'data.popup-content.tagsContent' | t }} {{product.tags | join: ', '}}</div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .popup-button {
+    background-color: {{ settings.colour | default: '#ff0000' }};
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .popup-button:hover {
+    opacity: 0.8;
+  }
+
+  .popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+
+  .popup-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+  }
+
+  .close-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+  }
+
+  .close-button:hover {
+    color: #333;
+  }
+
+  .popup-body {
+    line-height: 1.6;
+  }
+  .popup-item {
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #333;
+    font-size: 18px;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const openBtn = document.getElementById('openPopupBtn');
+    const closeBtn = document.getElementById('closePopupBtn');
+    const overlay = document.getElementById('popupOverlay');
+
+    // Mở popup
+    openBtn.addEventListener('click', function() {
+      overlay.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    });
+
+    // Đóng popup khi click vào nút X
+    closeBtn.addEventListener('click', function() {
+      overlay.style.display = 'none';
+      document.body.style.overflow = 'auto'; 
+    });
+
+    // Đóng popup khi click vào overlay (ngoài popup content)
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) {
+        overlay.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    });
+
+    // Đóng popup khi nhấn ESC
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && overlay.style.display === 'block') {
+        overlay.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Star Rating",
+  "target": "section",
+  "settings": [
+    { "type": "product", "id": "product", "label": "product", "autofill": true },
+    { "type": "color", "id": "colour", "label": "Star Colour", "default": "#ff0000" }
+  ]
+}
+{% endschema %}
